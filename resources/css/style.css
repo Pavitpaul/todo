@@ -30,16 +30,16 @@ header {
 }
 
 header input {
-  width: 100%;
+  width: calc(100% - 140px);
   height: 50px;
   float: left;
   color: #fff;
   font-size: 15px;
   font-weight: 400;
   text-indent: 18px;
-  padding: 0 60px 0 0;
+  padding: 0 10px 0 0;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 5px 25px 25px 5px;
+  border-radius: 5px 0 0 5px;
   border: 0px;
   box-shadow: none;
   outline: none;
@@ -64,16 +64,39 @@ header input:-ms-input-placeholder {
   color: rgba(255, 255, 255, 0.75);
 }
 
+header select {
+  width: 90px;
+  height: 50px;
+  float: left;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.3);
+  border: 0px;
+  border-radius: 0;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0 10px;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+header select option {
+  background: #25b99a;
+  color: #fff;
+}
+
 header button {
   width: 50px;
   height: 50px;
 
-  position:absolute;
-  top:15px;
-  right:15px;
-  z-index:2;
-
-  border-radius: 25px;
+  position: relative;
+  float: left;
+  
+  border-radius: 0 25px 25px 0;
   background: #fff;
   border: 0px;
   box-shadow: none;
@@ -128,8 +151,55 @@ ul.todo li {
   word-break: break-word;
 }
 
+/* Priority color coding - subtle backgrounds */
+ul.todo li.priority-high {
+  background: #ffe5e5;
+  border-left: 4px solid #ff6b6b;
+}
+
+ul.todo li.priority-medium {
+  background: #fff9e6;
+  border-left: 4px solid #ffd93d;
+}
+
+ul.todo li.priority-low {
+  background: #e6f7f1;
+  border-left: 4px solid #6bcf9f;
+}
+
 ul.todo li:last-of-type {
   margin: 0;
+}
+
+ul.todo li .task-text {
+  display: inline-block;
+  max-width: calc(100% - 100px);
+  padding-right: 10px;
+}
+
+ul.todo li .priority-select {
+  position: absolute;
+  right: 105px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #666;
+  cursor: pointer;
+  outline: none;
+  
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+ul.todo li .priority-select:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: #25b99a;
 }
 
 ul.todo li .buttons {

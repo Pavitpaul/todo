@@ -1,4 +1,3 @@
-
 var data = (localStorage.getItem('todoList')) ? JSON.parse(localStorage.getItem('todoList')):{
   todo: [],
   completed: []
@@ -14,23 +13,32 @@ renderTodoList();
 // If there is any text inside the item field, add that text to the todo list
 document.getElementById('add').addEventListener('click', function() {
   var value = document.getElementById('item').value;
+  var priority = document.getElementById('priority').value;
   if (value) {
-    addItem(value);
+    addItem(value, priority);
   }
 });
 
 document.getElementById('item').addEventListener('keydown', function (e) {
   var value = this.value;
+  var priority = document.getElementById('priority').value;
   if ((e.code === 'Enter' || e.code === 'NumpadEnter') && value) {
-    addItem(value);
+    addItem(value, priority);
   }
 });
 
-function addItem (value) {
-  addItemToDOM(value);
+function addItem (value, priority) {
+  priority = priority || 'medium'; // Default to medium if not specified
+  var taskObj = {
+    text: value,
+    priority: priority
+  };
+  
+  addItemToDOM(taskObj);
   document.getElementById('item').value = '';
+  document.getElementById('priority').value = 'medium'; // Reset to default
 
-  data.todo.push(value);
+  data.todo.push(taskObj);
   dataObjectUpdated();
 }
 
@@ -38,14 +46,27 @@ function renderTodoList() {
   if (!data.todo.length && !data.completed.length) return;
 
   for (var i = 0; i < data.todo.length; i++) {
-    var value = data.todo[i];
-    addItemToDOM(value);
+    var task = data.todo[i];
+    // Handle old data format (strings) and convert to objects
+    if (typeof task === 'string') {
+      task = { text: task, priority: 'medium' };
+      data.todo[i] = task;
+    }
+    addItemToDOM(task);
   }
 
   for (var j = 0; j < data.completed.length; j++) {
-    var value = data.completed[j];
-    addItemToDOM(value, true);
+    var task = data.completed[j];
+    // Handle old data format (strings) and convert to objects
+    if (typeof task === 'string') {
+      task = { text: task, priority: 'medium' };
+      data.completed[j] = task;
+    }
+    addItemToDOM(task, true);
   }
+  
+  // Save converted data if any old format was found
+  dataObjectUpdated();
 }
 
 function dataObjectUpdated() {
@@ -56,12 +77,16 @@ function removeItem() {
   var item = this.parentNode.parentNode;
   var parent = item.parentNode;
   var id = parent.id;
-  var value = item.innerText;
+  var value = item.querySelector('.task-text').innerText;
 
   if (id === 'todo') {
-    data.todo.splice(data.todo.indexOf(value), 1);
+    data.todo = data.todo.filter(function(task) {
+      return task.text !== value;
+    });
   } else {
-    data.completed.splice(data.completed.indexOf(value), 1);
+    data.completed = data.completed.filter(function(task) {
+      return task.text !== value;
+    });
   }
   dataObjectUpdated();
 
@@ -72,14 +97,26 @@ function completeItem() {
   var item = this.parentNode.parentNode;
   var parent = item.parentNode;
   var id = parent.id;
-  var value = item.innerText;
+  var value = item.querySelector('.task-text').innerText;
 
   if (id === 'todo') {
-    data.todo.splice(data.todo.indexOf(value), 1);
-    data.completed.push(value);
+    var taskIndex = data.todo.findIndex(function(task) {
+      return task.text === value;
+    });
+    if (taskIndex !== -1) {
+      var task = data.todo[taskIndex];
+      data.todo.splice(taskIndex, 1);
+      data.completed.push(task);
+    }
   } else {
-    data.completed.splice(data.completed.indexOf(value), 1);
-    data.todo.push(value);
+    var taskIndex = data.completed.findIndex(function(task) {
+      return task.text === value;
+    });
+    if (taskIndex !== -1) {
+      var task = data.completed[taskIndex];
+      data.completed.splice(taskIndex, 1);
+      data.todo.push(task);
+    }
   }
   dataObjectUpdated();
 
@@ -90,12 +127,47 @@ function completeItem() {
   target.insertBefore(item, target.childNodes[0]);
 }
 
+function changePriority() {
+  var item = this.parentNode;
+  var parent = item.parentNode;
+  var id = parent.id;
+  var value = item.querySelector('.task-text').innerText;
+  var newPriority = this.value;
+
+  // Update the priority in data
+  var taskList = (id === 'todo') ? data.todo : data.completed;
+  var taskIndex = taskList.findIndex(function(task) {
+    return task.text === value;
+  });
+  
+  if (taskIndex !== -1) {
+    taskList[taskIndex].priority = newPriority;
+    dataObjectUpdated();
+  }
+
+  // Update the visual styling
+  item.className = 'priority-' + newPriority;
+}
+
 // Adds a new item to the todo list
-function addItemToDOM(text, completed) {
+function addItemToDOM(taskObj, completed) {
   var list = (completed) ? document.getElementById('completed'):document.getElementById('todo');
 
   var item = document.createElement('li');
-  item.innerText = text;
+  item.className = 'priority-' + taskObj.priority;
+
+  var taskText = document.createElement('span');
+  taskText.classList.add('task-text');
+  taskText.innerText = taskObj.text;
+  item.appendChild(taskText);
+
+  // Create priority dropdown
+  var prioritySelect = document.createElement('select');
+  prioritySelect.classList.add('priority-select');
+  prioritySelect.innerHTML = '<option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>';
+  prioritySelect.value = taskObj.priority;
+  prioritySelect.addEventListener('change', changePriority);
+  item.appendChild(prioritySelect);
 
   var buttons = document.createElement('div');
   buttons.classList.add('buttons');
